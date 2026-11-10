@@ -31,6 +31,10 @@ public class StlParserASCII {
 
                 switch (parts[0].toLowerCase(Locale.ROOT)) {
                     case "facet" -> {
+                        if (!currentVertices.isEmpty()) {
+                            throw new IllegalArgumentException("предыдущая вершина не закрыта!, строка ошибки: " + lineCounter);
+
+                        }
                         if (parts.length >= 5) {
                             normal = new Point3d(
                                     parseToDouble(parts[2], lineCounter),
@@ -44,14 +48,18 @@ public class StlParserASCII {
 
                     }
                     case "vertex" -> {
-                        if (parts.length >= 4) {
+                        if (parts.length == 4) {
                             currentVertices.add( new Point3d(
                                     parseToDouble(parts[1], lineCounter),
                                     parseToDouble(parts[2], lineCounter),
                                     parseToDouble(parts[3], lineCounter)));
-                        } else {
+                        } if (parts.length < 4){
 
                             throw new IllegalArgumentException("В vertex не хватает координат. " +
+                                    "номер строки в файле: " +
+                                    lineCounter);
+                        } if (parts.length > 4) {
+                            throw new IllegalArgumentException("в vertex слишком много координат!" +
                                     "номер строки в файле: " +
                                     lineCounter);
                         }
@@ -86,7 +94,7 @@ public class StlParserASCII {
                             currentVertices.get(2),
                             normal));
                 } else {
-                    throw new IllegalArgumentException("в файле остались никуда не записанные вершины/нормаль! строка: " + lineCounter + ", количество вершин: " + currentVertices.size());
+                    throw new IllegalArgumentException("в файле остались никуда не записанные вершины/нормаль! номер строки: " + lineCounter + ", количество вершин: " + currentVertices.size());
                 }
             }
         } catch (IOException e) {
